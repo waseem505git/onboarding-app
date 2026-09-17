@@ -15,6 +15,7 @@ import { IndexedDbProgressRepository } from './persistence/progressRepository';
 import { buildBackup, buildProgressCsv, parseBackup } from './persistence/backup';
 import { startNewEngineerProfile, resetProfileProgress } from './domain/profileLifecycle';
 import { ProfileSetupForm } from './components/ProfileSetupForm';
+import { ProfileSelector } from './components/ProfileSelector';
 import { ImportWorkbookScreen } from './components/ImportWorkbookScreen';
 import { ImportReviewModal } from './components/ImportReviewModal';
 import { Dashboard } from './components/Dashboard';
@@ -62,6 +63,10 @@ export default function App() {
   const [showImportScreen, setShowImportScreen] = useState(false);
   const [showNewEngineerForm, setShowNewEngineerForm] = useState(false);
   const [showOrientation, setShowOrientation] = useState(false);
+  // Every fresh load must land on the profile picker rather than silently
+  // resuming whoever used the app last. Only an explicit pick (or creating a
+  // new profile) flips this to true.
+  const [profileConfirmed, setProfileConfirmed] = useState(false);
 
   useEffect(() => {
     void bootstrap();
@@ -201,6 +206,17 @@ export default function App() {
     setActiveProfileId(profile.id);
     setProgressList([]);
     setShowNewEngineerForm(false);
+    setProfileConfirmed(true);
+  }
+
+  async function handleSelectProfile(profileId: string) {
+    await handleSwitchProfile(profileId);
+    setProfileConfirmed(true);
+  }
+
+  function handleSwitchProfileClick() {
+    setProfileConfirmed(false);
+    setTab('dashboard');
   }
 
   async function ensureProgress(taskId: string): Promise<TaskProgress> {
@@ -298,10 +314,35 @@ export default function App() {
     );
   }
 
+  if (profiles.length > 0 && !profileConfirmed && !showNewEngineerForm) {
+    return (
+      <div className="app-shell">
+        <ProfileSelector
+          profiles={profiles}
+          onSelectProfile={(id) => void handleSelectProfile(id)}
+          onStartNewEngineer={() => setShowNewEngineerForm(true)}
+        />
+      </div>
+    );
+  }
+
   if (!activeProfile || showNewEngineerForm) {
     return (
       <div className="app-shell">
-        <ProfileSetupForm onSubmit={handleCreateProfile} title={showNewEngineerForm ? 'Start New Engineer' : undefined} />
+        <ProfileSetupForm
+          onSubmit={handleCreateProfile}
+          title={showNewEngineerForm ? 'Start New Engineer' : undefined}
+        />
+        {showNewEngineerForm && profiles.length > 0 && (
+          <button
+            type="button"
+            className="btn"
+            style={{ display: 'block', margin: '0 auto', maxWidth: 480 }}
+            onClick={() => setShowNewEngineerForm(false)}
+          >
+            Cancel
+          </button>
+        )}
       </div>
     );
   }
@@ -320,6 +361,9 @@ export default function App() {
         </div>
         <div className="header-actions">
           <ThemeToggle />
+          <button className="btn" onClick={handleSwitchProfileClick}>
+            Switch Profile
+          </button>
           <button className="btn" onClick={() => setTab('settings')}>
             <IconSettingsGear size={16} /> Data &amp; Profile Settings
           </button>
