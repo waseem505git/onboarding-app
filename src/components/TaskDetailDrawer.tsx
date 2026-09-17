@@ -3,6 +3,7 @@ import type { CurriculumTask } from '../types/curriculum';
 import type { TaskProgress, TaskStatus } from '../types/progress';
 import { TASK_STATUSES } from '../types/progress';
 import { StatusBadge } from './StatusBadge';
+import { GlossaryHint } from './GlossaryHint';
 import { sanitizeUrl } from '../utils/sanitize';
 
 interface TaskDetailDrawerProps {
@@ -91,13 +92,13 @@ export function TaskDetailDrawer({
             ← Back to checklist
           </button>
           {onNavigate && (hasPrevious || hasNext) && (
-            <div className="drawer-nav" role="group" aria-label="Move between tasks in this module">
+            <div className="drawer-nav" role="group" aria-label="Move between missions in this module">
               <button
                 type="button"
                 className="btn"
                 onClick={() => goTo('prev')}
                 disabled={!hasPrevious}
-                aria-label="Previous task in this module"
+                aria-label="Previous mission in this module"
               >
                 ← Previous
               </button>
@@ -111,14 +112,16 @@ export function TaskDetailDrawer({
                 className="btn"
                 onClick={() => goTo('next')}
                 disabled={!hasNext}
-                aria-label="Next task in this module"
+                aria-label="Next mission in this module"
               >
                 Next →
               </button>
             </div>
           )}
         </div>
-        <h2 id="task-drawer-title">{task.title}</h2>
+        <h2 id="task-drawer-title">
+          {task.title} <GlossaryHint text={task.title} />
+        </h2>
         {(phaseLabel || moduleTitle) && (
           <nav aria-label="Breadcrumb" className="task-breadcrumb">
             {phaseLabel && <span>{phaseLabel}</span>}
@@ -132,13 +135,13 @@ export function TaskDetailDrawer({
             <span className="task-breadcrumb-current">{task.title}</span>
           </nav>
         )}
-        <p style={{ fontSize: 12 }}>
-          {task.category} · Row {task.sourceRow} · {task.required ? 'Required' : 'Optional'}
-        </p>
+        <p style={{ fontSize: 12 }}>{task.required ? 'Required' : 'Optional'}</p>
         <StatusBadge status={progress.status} />
         {task.needsClarification && (
           <p className="needs-clarification-note">
-            Needs clarification: {task.clarificationNote ?? 'Source wording is unclear.'}
+            <strong>Needs trainer clarification.</strong>{' '}
+            {task.clarificationNote ??
+              'This mission requires clarification from your trainer or onboarding buddy.'}
           </p>
         )}
 
@@ -150,8 +153,14 @@ export function TaskDetailDrawer({
         )}
 
         <details className="field source-text-details">
-          <summary>Original source text</summary>
-          <p style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{task.sourceText}</p>
+          <summary>Source information</summary>
+          <p style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+            Section: {task.category}
+            <br />
+            Workbook row: {task.sourceRow}
+            <br />
+            Original source text: {task.sourceText}
+          </p>
         </details>
 
         {safeSourceLink && (
@@ -191,7 +200,7 @@ export function TaskDetailDrawer({
 
         {showReopenPrompt && (
           <div className="field">
-            <label htmlFor="reopen-reason">Reason for reopening this completed task</label>
+            <label htmlFor="reopen-reason">Reason for reopening this completed mission</label>
             <textarea
               id="reopen-reason"
               value={reopenReason}
@@ -257,7 +266,7 @@ export function TaskDetailDrawer({
             onClick={() => handleStatusSelect('Completed')}
             disabled={progress.status === 'Completed'}
           >
-            Complete Task
+            Complete Mission
           </button>
         </div>
       </div>

@@ -147,15 +147,15 @@ export function ModuleAccordion({
             <span className="module-title">
               {module.title}
               {module.needsClarification && (
-                <span className="badge badge-clarify" title="Needs clarification">
-                  <IconAlertTriangle size={13} /> Needs clarification
+                <span className="badge badge-clarify" title="Needs trainer clarification">
+                  <IconAlertTriangle size={13} /> Needs trainer clarification
                 </span>
               )}
             </span>
             <span className="module-summary">
               {progress.totalApplicableRequired === 0
-                ? 'No applicable required tasks'
-                : `${progress.completedRequired} of ${progress.totalApplicableRequired} required tasks completed`}
+                ? 'No applicable required missions'
+                : `${progress.completedRequired} of ${progress.totalApplicableRequired} required missions completed`}
             </span>
           </span>
           <span className="module-status-text">
@@ -181,13 +181,13 @@ export function ModuleAccordion({
         {moduleHasNoTasksAtAll ? (
           <span className="module-empty-note">No missions are currently assigned to this module.</span>
         ) : tasks.length === 0 ? (
-          <span className="module-empty-note">No tasks match the current filters.</span>
+          <span className="module-empty-note">No missions match the current filters.</span>
         ) : nextTask ? (
           <button type="button" className="btn btn-small" onClick={() => onOpenTask(nextTask)}>
             {continueLabel} <IconArrowRight size={14} />
           </button>
         ) : (
-          <span className="module-empty-note">No actionable task right now.</span>
+          <span className="module-empty-note">No actionable mission right now.</span>
         )}
       </div>
 
@@ -196,7 +196,7 @@ export function ModuleAccordion({
           {moduleHasNoTasksAtAll ? (
             <div className="empty-state">No missions are currently assigned to this module.</div>
           ) : tasks.length === 0 ? (
-            <div className="empty-state">This module has no tasks matching the current filters.</div>
+            <div className="empty-state">This module has no missions matching the current filters.</div>
           ) : (
             <div className="task-list">
               {tasks.map((task) => (

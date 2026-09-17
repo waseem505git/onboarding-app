@@ -101,6 +101,36 @@ docs/           data-model.md, import-rules.md, privacy-and-security.md
 sample-data/    synthetic example profile/progress (no real data)
 ```
 
+## Day-1 experience (Version 3 UX pass)
+
+To reduce first-day friction for a brand-new engineer, without touching the
+workbook parser, curriculum hierarchy, task IDs, progress math, or IndexedDB
+schema:
+
+- **First-run orientation modal** — shown once per profile, right after
+  profile creation, explaining the Phase → Module → Mission structure and
+  the current phase/module/mission counts. Dismissal is a UI preference
+  persisted in `localStorage` (never IndexedDB), so it never appears again
+  for that profile. See `src/components/OrientationModal.tsx`.
+- **Decluttered dashboard** — the Blocked/Waiting-for-Trainer/Recently
+  Completed cards are hidden entirely when empty (common on day one)
+  instead of showing an empty placeholder card.
+- **Consistent "Phase / Module / Mission" terminology** — removed
+  developer-facing copy (raw workbook row numbers, the redundant
+  "Category" label) from user-facing screens; that information still
+  exists, just tucked under a "Source information" expandable section in
+  the mission drawer.
+- **Acronym glossary** — a small info icon next to a mission title shows a
+  short, locally-defined explanation (hover, keyboard focus, or tap) for
+  known tool/acronym names (ICE, KLARITY, RFC, POR, WG, EDI, DETS, DART,
+  JMP). See `src/glossary/glossary.ts` — purely static data, no external
+  calls, and no invented procedures; unrecognized terms simply show no
+  tooltip.
+- **Clearer clarification flag** — "Needs clarification" is now
+  "Needs trainer clarification" with a neutral (non-error) explanation that
+  it's something for a trainer/buddy to resolve, not something broken in
+  the app.
+
 ## Known limitations
 
 - The source workbook has no "ECD" (target date) values, no explicit

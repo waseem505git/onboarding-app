@@ -16,7 +16,7 @@ export function TaskCard({ task, progress, onOpen }: TaskCardProps) {
       type="button"
       className={`task-card ${isCompleted ? 'completed' : ''}`}
       onClick={onOpen}
-      aria-label={`${task.title}, status ${progress.status}${task.needsClarification ? ', needs clarification' : ''}`}
+      aria-label={`${task.title}, status ${progress.status}${task.needsClarification ? ', needs trainer clarification' : ''}`}
     >
       <div className="task-main">
         <div className="task-title">
@@ -28,14 +28,10 @@ export function TaskCard({ task, progress, onOpen }: TaskCardProps) {
           {task.title}
         </div>
         <div className="task-meta">
-          <span className="task-meta-category">{task.category}</span>
-          <span className="task-meta-dot" aria-hidden="true">
-            •
-          </span>
           <span>{task.required ? 'Required' : 'Optional'}</span>
           {task.needsClarification && (
             <span className="clarify-flag">
-              <IconAlertTriangle size={13} /> Needs clarification
+              <IconAlertTriangle size={13} /> Needs trainer clarification
             </span>
           )}
         </div>

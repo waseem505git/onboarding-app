@@ -95,9 +95,9 @@ export function ChecklistView({ tasks, progressByTaskId, onOpenTask, openTaskId 
           </select>
         </div>
         <div className="field">
-          <label htmlFor="category-filter">Category</label>
+          <label htmlFor="category-filter">Section</label>
           <select id="category-filter" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
-            <option value="all">All categories</option>
+            <option value="all">All sections</option>
             {categories.map((c) => (
               <option key={c} value={c}>
                 {c}
@@ -143,13 +143,13 @@ export function ChecklistView({ tasks, progressByTaskId, onOpenTask, openTaskId 
             onChange={(e) => setOnlyClarification(e.target.checked)}
           />
           <label htmlFor="clarify-only" style={{ marginBottom: 0 }}>
-            Needs clarification only
+            Needs trainer clarification only
           </label>
         </div>
       </div>
 
       {filtered.length === 0 ? (
-        <div className="empty-state">No tasks match the current filters.</div>
+        <div className="empty-state">No missions match the current filters.</div>
       ) : (
         phasesWithVisibleModules.map((phase) => (
           <section key={phase} aria-labelledby={`phase-heading-${phase}`} style={{ marginTop: 20 }}>

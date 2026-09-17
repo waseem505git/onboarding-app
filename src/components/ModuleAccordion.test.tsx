@@ -116,7 +116,7 @@ describe('ModuleAccordion', () => {
         onOpenTask={() => {}}
       />,
     );
-    expect(screen.getByText(/no tasks match the current filters/i)).toBeInTheDocument();
+    expect(screen.getByText(/no missions match the current filters/i)).toBeInTheDocument();
   });
 
   it('shows a distinct message when the module truly has zero tasks assigned (not just filtered out)', () => {

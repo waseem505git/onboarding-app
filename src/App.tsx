@@ -7,7 +7,7 @@ import { parseWorkbook } from './parsing/workbookParser';
 import { normalizeRows } from './curriculum/normalize';
 import { computeReimportDiff, type ReimportDiff } from './curriculum/reimport';
 import { buildModules } from './curriculum/modules';
-import { PHASE_LABELS } from './types/curriculum';
+import { PHASE_LABELS, PHASE_ORDER } from './types/curriculum';
 import { applyStatusChange, undoLastTransition } from './domain/statusTransitions';
 import { IndexedDbCurriculumRepository } from './persistence/curriculumRepository';
 import { IndexedDbProfileRepository } from './persistence/profileRepository';
@@ -22,6 +22,7 @@ import { ChecklistView } from './components/ChecklistView';
 import { TaskDetailDrawer } from './components/TaskDetailDrawer';
 import { DataManagementPanel } from './components/DataManagementPanel';
 import { ThemeToggle } from './components/ThemeToggle';
+import { OrientationModal, hasSeenOrientation, markOrientationSeen } from './components/OrientationModal';
 import { IconGrid, IconList, IconSettingsGear } from './components/icons';
 
 const curriculumRepo = new IndexedDbCurriculumRepository();
@@ -60,6 +61,7 @@ export default function App() {
   const [pendingMeta, setPendingMeta] = useState<ImportMeta | null>(null);
   const [showImportScreen, setShowImportScreen] = useState(false);
   const [showNewEngineerForm, setShowNewEngineerForm] = useState(false);
+  const [showOrientation, setShowOrientation] = useState(false);
 
   useEffect(() => {
     void bootstrap();
@@ -113,6 +115,26 @@ export default function App() {
     const nextId = openModuleTaskIds[nextIndex];
     if (nextId && taskById.has(nextId)) setOpenTaskId(nextId);
   }
+
+  // First-run orientation: show once per profile, right after the app has
+  // an active profile with a curriculum loaded, then never again unless
+  // localStorage is cleared. This is a UI preference only — it never
+  // touches curriculum, progress, or profile data.
+  useEffect(() => {
+    if (!activeProfileId || tasks.length === 0) return;
+    setShowOrientation(!hasSeenOrientation(activeProfileId));
+  }, [activeProfileId, tasks.length]);
+
+  function dismissOrientation() {
+    if (activeProfileId) markOrientationSeen(activeProfileId);
+    setShowOrientation(false);
+  }
+
+  const totalMissionCount = tasks.length;
+  const totalModuleCount = modules.length;
+  const totalPhaseCount = new Set(tasks.map((t) => t.phase)).size;
+  const firstPhaseWithTasks = PHASE_ORDER.find((phase) => tasks.some((t) => t.phase === phase));
+  const firstPhaseLabel = firstPhaseWithTasks ? PHASE_LABELS[firstPhaseWithTasks] : 'your first phase';
 
   function showToast(message: string) {
     setToast(message);
@@ -196,7 +218,7 @@ export default function App() {
     const { progress } = applyStatusChange(current, status, options);
     await progressRepo.save(progress);
     setProgressList((prev) => prev.map((p) => (p.key === progress.key ? progress : p)));
-    if (status === 'Completed') showToast('Task completed — nice work!');
+    if (status === 'Completed') showToast('Mission completed — nice work!');
   }
 
   async function handleUndo(taskId: string) {
@@ -303,6 +325,18 @@ export default function App() {
           </button>
         </div>
       </header>
+
+      {showOrientation && (
+        <OrientationModal
+          engineerFirstName={activeProfile.fullName.split(' ')[0] || activeProfile.fullName}
+          totalPhases={totalPhaseCount}
+          totalModules={totalModuleCount}
+          totalMissions={totalMissionCount}
+          targetCompletionDate={activeProfile.targetCompletionDate}
+          firstPhaseLabel={firstPhaseLabel}
+          onStart={dismissOrientation}
+        />
+      )}
 
       <nav className="tabs" role="tablist" aria-label="Sections">
         <button className="tab" role="tab" aria-selected={tab === 'dashboard'} onClick={() => setTab('dashboard')}>

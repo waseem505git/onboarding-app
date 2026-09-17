@@ -815,3 +815,68 @@ label {
 @media (max-width: 640px) {
   .module-task-list { padding-left: 12px; }
 }
+
+/* Glossary hints (info icon + tooltip for acronyms/tool names) */
+.glossary-hints { display: inline-flex; align-items: center; gap: 2px; margin-left: 4px; }
+.glossary-term { position: relative; display: inline-flex; }
+.glossary-info-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 2px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 50%;
+}
+.glossary-info-btn:hover,
+.glossary-info-btn:focus-visible {
+  color: var(--accent);
+}
+.glossary-tooltip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface-elevated, var(--surface));
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: var(--shadow-lg);
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 400;
+  width: max-content;
+  max-width: 260px;
+  z-index: 70;
+  text-align: left;
+}
+
+/* First-run orientation modal */
+.orientation-modal { max-width: 480px; }
+.orientation-stats {
+  display: flex;
+  gap: 20px;
+  margin: 16px 0;
+  flex-wrap: wrap;
+}
+.orientation-stat { display: flex; align-items: center; gap: 8px; }
+.orientation-stat-value { font-size: 22px; font-weight: 700; line-height: 1; }
+.orientation-stat-label { font-size: 12px; color: var(--text-secondary); }
+.orientation-target { font-size: 13px; color: var(--text-secondary); }
+.orientation-hierarchy {
+  background: var(--status-not-started-bg);
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin: 12px 0;
+}
+.orientation-hierarchy-row { display: flex; align-items: center; gap: 6px; padding: 2px 0; }
+.orientation-hierarchy-indent-1 { padding-left: 16px; }
+.orientation-hierarchy-indent-2 { padding-left: 32px; }
+.orientation-hierarchy-label { font-weight: 600; }
+.orientation-start-btn { width: 100%; margin-top: 12px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .glossary-tooltip { transition: none; }
+}

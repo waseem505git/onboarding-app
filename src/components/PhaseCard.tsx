@@ -24,7 +24,7 @@ export function PhaseCard({
   completedModuleCount,
 }: PhaseCardProps) {
   const isDone = summary.totalRequired > 0 && summary.completedRequired === summary.totalRequired;
-  const stateLabel = isDone ? 'Completed' : isCurrent ? 'In progress' : summary.totalRequired === 0 ? 'No tasks' : 'Upcoming';
+  const stateLabel = isDone ? 'Completed' : isCurrent ? 'In progress' : summary.totalRequired === 0 ? 'No missions' : 'Upcoming';
 
   return (
     <div className={`phase-card ${isCurrent ? 'current' : ''} ${isDone ? 'done' : ''}`}>
@@ -38,7 +38,7 @@ export function PhaseCard({
       <ProgressBar percent={summary.percentComplete} label={`${label} progress`} />
       <div className="phase-card-meta">
         <span>
-          {summary.completedRequired}/{summary.totalRequired} tasks
+          {summary.completedRequired}/{summary.totalRequired} missions
         </span>
         <span>{summary.totalRequired > 0 ? `${summary.percentComplete}%` : 'N/A'}</span>
       </div>

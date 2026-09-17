@@ -79,11 +79,11 @@ export function Dashboard({ profile, tasks, progressByTaskId, onOpenTask }: Dash
           <div className="value">
             {overall.completedRequired} / {overall.totalRequired}
           </div>
-          <div className="label">Required tasks completed</div>
+          <div className="label">Required missions completed</div>
         </div>
         <div className="stat card">
           <div className="value">{blocked.length}</div>
-          <div className="label">Blocked tasks</div>
+          <div className="label">Blocked missions</div>
         </div>
         <div className="stat card">
           <div className="value">{waiting.length}</div>
@@ -148,19 +148,17 @@ export function Dashboard({ profile, tasks, progressByTaskId, onOpenTask }: Dash
                 </button>
               </>
             ) : (
-              <p>All required tasks are complete. Great work!</p>
+              <p>All required missions are complete. Great work!</p>
             )}
           </div>
         </div>
 
         <div>
-          <div className="card">
-            <h3>
-              <IconBan size={16} /> Blocked tasks ({blocked.length})
-            </h3>
-            {blocked.length === 0 ? (
-              <p>None right now.</p>
-            ) : (
+          {blocked.length > 0 && (
+            <div className="card">
+              <h3>
+                <IconBan size={16} /> Blocked missions ({blocked.length})
+              </h3>
               <ul className="diff-list">
                 {blocked.map((t) => (
                   <li key={t.id}>
@@ -170,16 +168,14 @@ export function Dashboard({ profile, tasks, progressByTaskId, onOpenTask }: Dash
                   </li>
                 ))}
               </ul>
-            )}
-          </div>
+            </div>
+          )}
 
-          <div className="card" style={{ marginTop: 16 }}>
-            <h3>
-              <IconClock size={16} /> Waiting for trainer ({waiting.length})
-            </h3>
-            {waiting.length === 0 ? (
-              <p>None right now.</p>
-            ) : (
+          {waiting.length > 0 && (
+            <div className="card" style={{ marginTop: blocked.length > 0 ? 16 : 0 }}>
+              <h3>
+                <IconClock size={16} /> Waiting for trainer ({waiting.length})
+              </h3>
               <ul className="diff-list">
                 {waiting.map((t) => (
                   <li key={t.id}>
@@ -189,23 +185,21 @@ export function Dashboard({ profile, tasks, progressByTaskId, onOpenTask }: Dash
                   </li>
                 ))}
               </ul>
-            )}
-          </div>
+            </div>
+          )}
 
-          <div className="card" style={{ marginTop: 16 }}>
-            <h3>
-              <IconCheckCircle size={16} /> Recently completed
-            </h3>
-            {recent.length === 0 ? (
-              <p>Nothing completed yet.</p>
-            ) : (
+          {recent.length > 0 && (
+            <div className="card" style={{ marginTop: blocked.length > 0 || waiting.length > 0 ? 16 : 0 }}>
+              <h3>
+                <IconCheckCircle size={16} /> Recently completed
+              </h3>
               <ul className="diff-list">
                 {recent.map(({ task, progress }) => (
                   <li key={task.id}>✔ {task.title} — {new Date(progress.completionDate!).toLocaleDateString()}</li>
                 ))}
               </ul>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
