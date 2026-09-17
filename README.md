@@ -32,7 +32,9 @@ npm run preview # preview a production build locally
 For hosting `npm run build`'s output on an internal SharePoint Online Site
 Page (for team-wide access beyond one local machine), see
 `docs/sharepoint-deployment.md`. For hosting via Intel's internal GitHub
-(GitHub Pages), see `docs/github-pages-deployment.md`.
+(GitHub Pages), see `docs/github-pages-deployment.md`. For the fastest path
+to a shareable URL for a small internal pilot team, see
+`docs/team-deployment-plan.md`.
 
 ## Where to place the workbook
 
