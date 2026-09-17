@@ -1,0 +1,42 @@
+{
+  "_comment": "SYNTHETIC sample data for demos/tests only. No real employee, curriculum, or company data.",
+  "formatVersion": 1,
+  "exportedAt": "2026-01-01T00:00:00.000Z",
+  "profiles": [
+    {
+      "id": "sample-profile-0001",
+      "fullName": "Sam Example",
+      "startDate": "2026-01-05",
+      "roleOrTrack": "Defect Metrology Engineer (sample track)",
+      "layerOrArea": "Sample Layer A",
+      "manager": "Jordan Sample-Manager",
+      "buddyOrMentor": "Alex Sample-Mentor",
+      "targetCompletionDate": "2026-03-01",
+      "createdAt": "2026-01-05T09:00:00.000Z",
+      "updatedAt": "2026-01-05T09:00:00.000Z"
+    }
+  ],
+  "progress": [
+    {
+      "key": "sample-profile-0001::sample-task-0001",
+      "profileId": "sample-profile-0001",
+      "taskId": "sample-task-0001",
+      "status": "Completed",
+      "notes": "Sample note: completed during first week orientation.",
+      "history": [
+        {
+          "timestamp": "2026-01-06T10:00:00.000Z",
+          "fromStatus": null,
+          "toStatus": "In Progress"
+        },
+        {
+          "timestamp": "2026-01-07T15:30:00.000Z",
+          "fromStatus": "In Progress",
+          "toStatus": "Completed"
+        }
+      ],
+      "updatedAt": "2026-01-07T15:30:00.000Z",
+      "completionDate": "2026-01-07T15:30:00.000Z"
+    }
+  ]
+}
