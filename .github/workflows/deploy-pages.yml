@@ -22,7 +22,18 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # jsdom@30 (a transitive dependency via vitest, used for our DOM
+          # test environment) bundles undici@8, whose WebIDL helpers require
+          # Node's built-in `worker_threads.markAsUncloneable`, which only
+          # exists on Node ^22.22.2 || ^24.15.0 || >=26.0.0 (see jsdom's own
+          # package.json "engines" field). Node 20 does not have this
+          # function, so every vitest worker fails to start with
+          # "TypeError: webidl.util.markAsUncloneable is not a function"
+          # even though nothing is wrong with the test code itself. Use
+          # Node 24 here to match the "engines" requirement (and the local
+          # dev/test environment, Node v24.19.0) so CI behaves the same as
+          # local runs.
+          node-version: 24
           cache: npm
       - run: npm ci
       - run: npm run test
