@@ -189,6 +189,28 @@ confidence score. See the table below.
 **Continue behavior (per module):** selecting Continue opens the next
 actionable task using this priority: In Progress -> Ready for Review ->
 Waiting for Trainer -> first unblocked Not Started -> Blocked (only if
-nothing else is actionable), respecting the workbook's row order. A
-completed module's button reads "Review Module" instead.
+nothing else is actionable), respecting the workbook's row order. Once
+every applicable required task in a module is Completed, the button reads
+"Review Module" and opens the first task in curriculum order (rather than
+disappearing) so there is always something to review.
+
+**Accordion UI:** each module card expands/collapses independently. The
+expanded/collapsed state is a per-module UI preference persisted in
+`localStorage` (key `defmet.moduleExpanded.<moduleId>`), separate from
+IndexedDB curriculum/progress data — it is purely a display preference and
+carries no onboarding content. Opening a task from anywhere (dashboard
+"Next Mission", search, etc.) auto-expands its module once; the engineer
+can still explicitly collapse that module afterward while the task drawer
+remains open.
+
+**A note on "POR layers Practice" row shape:** unlike the other modules,
+each POR layers Practice row packs *two* related values into one row —
+column B holds a short internal code (e.g. "STRFC") and column C holds its
+descriptive name (e.g. "Process Flow"). These are **the same mission**, not
+two missions, so each of the 12 POR rows becomes exactly one task whose
+title is the column-B code and whose description includes the column-C
+name (plus the column-E note, e.g. "high level overview"). No content is
+dropped — both values are preserved, just combined into one task rather
+than split into two, because splitting them would invent a task boundary
+the workbook itself does not draw.
 

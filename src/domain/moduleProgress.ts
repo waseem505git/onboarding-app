@@ -98,6 +98,11 @@ export function computeModuleProgress(
  *  3. A Waiting for Trainer task
  *  4. The first unblocked Not Started task
  *  5. A Blocked task only if no other actionable task exists
+ *  6. If nothing above matches but the module has tasks (e.g. every
+ *     applicable required task is already Completed), the first task in
+ *     curriculum order — so "Review Module" always opens something rather
+ *     than the Continue control disappearing.
+ * Returns null only when the module truly has no tasks at all.
  * Curriculum (workbook) order is respected within each priority tier.
  */
 export function computeModuleNextTask(
@@ -131,6 +136,12 @@ export function computeModuleNextTask(
 
   const blocked = byStatus('Blocked');
   if (blocked) return blocked;
+
+  // Nothing actionable remains (e.g. every applicable required task is
+  // Completed, or the module's tasks are all Not Applicable/optional). The
+  // module still has content, so "Review Module" should open the first
+  // mission in curriculum order rather than the button disappearing.
+  if (tasks.length > 0) return tasks[0];
 
   return null;
 }

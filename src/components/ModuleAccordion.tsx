@@ -1,4 +1,4 @@
-import { useId, useState, type ReactElement } from 'react';
+import { useEffect, useId, useState, type ReactElement } from 'react';
 import type { CurriculumTask } from '../types/curriculum';
 import type { CurriculumModule, ModuleIconKey } from '../types/module';
 import type { ModuleProgressSummary } from '../domain/moduleProgress';
@@ -52,6 +52,27 @@ const STATUS_CLASS: Record<ModuleProgressSummary['status'], string> = {
   'Not Applicable': 'module-status-not-applicable',
 };
 
+const EXPANDED_STORAGE_PREFIX = 'defmet.moduleExpanded.';
+
+/** Reads the user's last-chosen expand/collapse preference for this module
+ * from localStorage. Defaults to collapsed (false) the first time a module
+ * is ever seen, or if storage is unavailable (e.g. private browsing). */
+function readStoredExpanded(moduleId: string): boolean {
+  try {
+    return window.localStorage.getItem(EXPANDED_STORAGE_PREFIX + moduleId) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function writeStoredExpanded(moduleId: string, value: boolean): void {
+  try {
+    window.localStorage.setItem(EXPANDED_STORAGE_PREFIX + moduleId, value ? '1' : '0');
+  } catch {
+    // Storage unavailable — expand/collapse still works for this session, it just won't persist.
+  }
+}
+
 interface ModuleAccordionProps {
   module: CurriculumModule;
   progress: ModuleProgressSummary;
@@ -61,6 +82,9 @@ interface ModuleAccordionProps {
   onOpenTask: (task: CurriculumTask) => void;
   /** When true (e.g. an active search matched something inside), force-expand regardless of user toggle. */
   forceExpanded?: boolean;
+  /** True while the task drawer is open for a task that belongs to this module — auto-expands it once,
+   * without fighting a subsequent manual collapse by the user. */
+  containsOpenTask?: boolean;
 }
 
 export function ModuleAccordion({
@@ -71,16 +95,39 @@ export function ModuleAccordion({
   progressByTaskId,
   onOpenTask,
   forceExpanded = false,
+  containsOpenTask = false,
 }: ModuleAccordionProps) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(() => readStoredExpanded(module.moduleId));
   const panelId = useId();
   const headingId = useId();
+
+  // Auto-expand the module the moment it starts containing the open task
+  // (e.g. the engineer opened a task from the dashboard's "Next Mission").
+  // This only fires on that transition — it never re-forces the module open
+  // after the user has explicitly collapsed it again while the same task
+  // drawer is still open.
+  useEffect(() => {
+    if (containsOpenTask) setExpanded(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [containsOpenTask]);
+
+  function toggleExpanded() {
+    setExpanded((v) => {
+      const next = !v;
+      writeStoredExpanded(module.moduleId, next);
+      return next;
+    });
+  }
 
   const isExpanded = expanded || forceExpanded;
   const Icon = MODULE_ICONS[module.iconKey];
   const StatusIcon = STATUS_ICON[progress.status];
 
   const continueLabel = progress.status === 'Completed' ? 'Review Module' : 'Continue';
+  // A module can have zero tasks at all (truly empty) vs. simply having none
+  // of its tasks currently visible under an active filter — these need
+  // different, non-alarming messaging rather than a disabled control.
+  const moduleHasNoTasksAtAll = module.taskIds.length === 0;
 
   return (
     <div className={`module-card ${STATUS_CLASS[progress.status]}`}>
@@ -91,7 +138,7 @@ export function ModuleAccordion({
           aria-expanded={isExpanded}
           aria-controls={panelId}
           id={headingId}
-          onClick={() => setExpanded((v) => !v)}
+          onClick={toggleExpanded}
         >
           <span className="module-icon" aria-hidden="true">
             <Icon size={20} />
@@ -131,7 +178,9 @@ export function ModuleAccordion({
         {progress.readyForReviewCount > 0 && (
           <span className="module-meta-info">{progress.readyForReviewCount} ready for review</span>
         )}
-        {tasks.length === 0 ? (
+        {moduleHasNoTasksAtAll ? (
+          <span className="module-empty-note">No missions are currently assigned to this module.</span>
+        ) : tasks.length === 0 ? (
           <span className="module-empty-note">No tasks match the current filters.</span>
         ) : nextTask ? (
           <button type="button" className="btn btn-small" onClick={() => onOpenTask(nextTask)}>
@@ -144,7 +193,9 @@ export function ModuleAccordion({
 
       {isExpanded && (
         <div id={panelId} role="region" aria-labelledby={headingId} className="module-task-list">
-          {tasks.length === 0 ? (
+          {moduleHasNoTasksAtAll ? (
+            <div className="empty-state">No missions are currently assigned to this module.</div>
+          ) : tasks.length === 0 ? (
             <div className="empty-state">This module has no tasks matching the current filters.</div>
           ) : (
             <div className="task-list">

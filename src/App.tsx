@@ -326,7 +326,12 @@ export default function App() {
       )}
 
       {tab === 'checklist' && (
-        <ChecklistView tasks={tasks} progressByTaskId={progressByTaskId} onOpenTask={(t) => setOpenTaskId(t.id)} />
+        <ChecklistView
+          tasks={tasks}
+          progressByTaskId={progressByTaskId}
+          onOpenTask={(t) => setOpenTaskId(t.id)}
+          openTaskId={openTaskId}
+        />
       )}
 
       {tab === 'settings' && (

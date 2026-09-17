@@ -138,24 +138,30 @@ describe('computeModuleNextTask', () => {
     expect(next?.id).toBe('t1');
   });
 
-  it('returns null when every task is already Completed', () => {
+  it('returns the first task (for "Review Module") when every task is already Completed', () => {
     const tasks = [makeTask({ id: 't1', sourceRow: 1 })];
     const tasksById = new Map(tasks.map((t) => [t.id, t]));
     const module = makeModule(['t1']);
     const progressByTaskId = new Map([['t1', progress('p', 't1', 'Completed')]]);
     const next = computeModuleNextTask(module, tasksById, progressByTaskId);
+    expect(next?.id).toBe('t1');
+  });
+
+  it('returns null only when the module truly has no tasks at all', () => {
+    const module = makeModule([]);
+    const next = computeModuleNextTask(module, new Map(), new Map());
     expect(next).toBeNull();
   });
 });
 
 describe('computeModulesWithProgress', () => {
-  it('shows completed-module state clearly', () => {
+  it('shows completed-module state clearly, with a task available for "Review Module"', () => {
     const tasks = [makeTask({ id: 't1', sourceRow: 1 })];
     const tasksById = new Map(tasks.map((t) => [t.id, t]));
     const module = makeModule(['t1']);
     const progressByTaskId = new Map([['t1', progress('p', 't1', 'Completed')]]);
     const [entry] = computeModulesWithProgress([module], tasksById, progressByTaskId);
     expect(entry.progress.status).toBe('Completed');
-    expect(entry.nextTask).toBeNull();
+    expect(entry.nextTask?.id).toBe('t1');
   });
 });

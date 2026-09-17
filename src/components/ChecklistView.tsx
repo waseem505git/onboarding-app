@@ -11,9 +11,11 @@ interface ChecklistViewProps {
   tasks: CurriculumTask[];
   progressByTaskId: Map<string, TaskProgress>;
   onOpenTask: (task: CurriculumTask) => void;
+  /** The task currently shown in the drawer, if any — used to auto-expand its module. */
+  openTaskId?: string | null;
 }
 
-export function ChecklistView({ tasks, progressByTaskId, onOpenTask }: ChecklistViewProps) {
+export function ChecklistView({ tasks, progressByTaskId, onOpenTask, openTaskId = null }: ChecklistViewProps) {
   const [query, setQuery] = useState('');
   const [phaseFilter, setPhaseFilter] = useState<Phase | 'all'>('all');
   const [statusFilter, setStatusFilter] = useState<TaskStatus | 'all'>('all');
@@ -171,6 +173,7 @@ export function ChecklistView({ tasks, progressByTaskId, onOpenTask }: Checklist
                       progressByTaskId={progressByTaskId}
                       onOpenTask={onOpenTask}
                       forceExpanded={hasActiveFilter}
+                      containsOpenTask={openTaskId != null && module.taskIds.includes(openTaskId)}
                     />
                   );
                 })}

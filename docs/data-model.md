@@ -109,4 +109,13 @@ single phase.
   `src/domain/moduleProgress.ts`) is always derived fresh from its child
   tasks' current `TaskProgress` records — there is no separate module
   progress store to keep in sync or to desynchronize.
+- `computeModuleNextTask` always returns a task if the module has at least
+  one (even once every applicable required task is Completed, it falls
+  back to the first task in curriculum order) so the "Continue"/"Review
+  Module" button is always actionable — it only returns `null` for a
+  module with zero tasks at all.
+- The accordion's expanded/collapsed state per module is a UI-only
+  preference stored in `localStorage` (`defmet.moduleExpanded.<moduleId>`),
+  not in IndexedDB — it holds no onboarding content and is safe to clear at
+  any time without affecting curriculum or progress data.
 

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ModuleAccordion } from './ModuleAccordion';
 import type { CurriculumModule } from '../types/module';
@@ -42,6 +42,13 @@ const progress: ModuleProgressSummary = {
 };
 
 describe('ModuleAccordion', () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+  });
+  afterEach(() => {
+    window.localStorage.clear();
+  });
+
   it('is collapsed by default and expands on click, updating aria-expanded', () => {
     render(
       <ModuleAccordion
@@ -112,6 +119,85 @@ describe('ModuleAccordion', () => {
     expect(screen.getByText(/no tasks match the current filters/i)).toBeInTheDocument();
   });
 
+  it('shows a distinct message when the module truly has zero tasks assigned (not just filtered out)', () => {
+    render(
+      <ModuleAccordion
+        module={{ ...module, taskIds: [] }}
+        progress={{ ...progress, status: 'Not Applicable', totalApplicableRequired: 0 }}
+        nextTask={null}
+        tasks={[]}
+        progressByTaskId={new Map()}
+        onOpenTask={() => {}}
+      />,
+    );
+    expect(screen.getByText(/no missions are currently assigned to this module/i)).toBeInTheDocument();
+  });
+
+  it('persists the expanded/collapsed state to localStorage per module id', () => {
+    const { unmount } = render(
+      <ModuleAccordion
+        module={module}
+        progress={progress}
+        nextTask={task}
+        tasks={[task]}
+        progressByTaskId={new Map()}
+        onOpenTask={() => {}}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /Systems installation & overview/i }));
+    expect(window.localStorage.getItem(`defmet.moduleExpanded.${module.moduleId}`)).toBe('1');
+    unmount();
+
+    // A fresh mount of the same module should restore the persisted preference.
+    render(
+      <ModuleAccordion
+        module={module}
+        progress={progress}
+        nextTask={task}
+        tasks={[task]}
+        progressByTaskId={new Map()}
+        onOpenTask={() => {}}
+      />,
+    );
+    expect(screen.getByRole('button', { name: /Systems installation & overview/i })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+  });
+
+  it('auto-expands once the drawer opens for a task inside this module, without fighting a later manual collapse', () => {
+    const { rerender } = render(
+      <ModuleAccordion
+        module={module}
+        progress={progress}
+        nextTask={task}
+        tasks={[task]}
+        progressByTaskId={new Map()}
+        onOpenTask={() => {}}
+        containsOpenTask={false}
+      />,
+    );
+    const toggle = () => screen.getByRole('button', { name: /Systems installation & overview/i });
+    expect(toggle()).toHaveAttribute('aria-expanded', 'false');
+
+    rerender(
+      <ModuleAccordion
+        module={module}
+        progress={progress}
+        nextTask={task}
+        tasks={[task]}
+        progressByTaskId={new Map()}
+        onOpenTask={() => {}}
+        containsOpenTask
+      />,
+    );
+    expect(toggle()).toHaveAttribute('aria-expanded', 'true');
+
+    // The user can still explicitly collapse it while the drawer stays open.
+    fireEvent.click(toggle());
+    expect(toggle()).toHaveAttribute('aria-expanded', 'false');
+  });
+
   it('calls onOpenTask with the recommended next task when Continue is clicked', () => {
     const onOpenTask = vi.fn();
     render(
@@ -128,17 +214,18 @@ describe('ModuleAccordion', () => {
     expect(onOpenTask).toHaveBeenCalledWith(task);
   });
 
-  it('labels the Continue button "Review Module" once the module is Completed', () => {
+  it('labels the Continue button "Review Module" once the module is Completed, and it stays actionable', () => {
     render(
       <ModuleAccordion
         module={module}
         progress={{ ...progress, status: 'Completed', percentComplete: 100, completedRequired: 1 }}
-        nextTask={null}
+        nextTask={task}
         tasks={[task]}
         progressByTaskId={new Map()}
         onOpenTask={() => {}}
       />,
     );
-    expect(screen.queryByRole('button', { name: /Continue/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Review Module/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Continue/i })).not.toBeInTheDocument();
   });
 });

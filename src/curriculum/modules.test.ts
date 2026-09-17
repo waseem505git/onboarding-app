@@ -109,4 +109,83 @@ describe('buildModules', () => {
     expect(byPhase.get('welcome-access-communication')?.length).toBe(1);
     expect(byPhase.get('systems-installation')?.length).toBe(1);
   });
+
+  it('imports "General" as a module (not a task) whose specific missions appear inside it', () => {
+    const rows: RawWorkbookRow[] = [
+      row({ rowNumber: 4, category: 'General', title: 'PD Process flow and defects' }),
+      row({ rowNumber: 5, category: 'General', title: 'Data flow & Database' }),
+      row({ rowNumber: 6, category: 'General', title: 'NCDD/EDI calculation' }),
+    ];
+    const tasks = normalizeRows(rows);
+    const modules = buildModules(tasks);
+    // No task literally titled "General" — the category becomes a module, not a task.
+    expect(tasks.some((t) => t.title.trim().toLowerCase() === 'general')).toBe(false);
+    const generalModule = modules.find((m) => m.title === 'General');
+    expect(generalModule).toBeDefined();
+    expect(generalModule!.taskIds).toHaveLength(3);
+    const titles = generalModule!.taskIds.map((id) => tasks.find((t) => t.id === id)!.title);
+    expect(titles).toEqual(['PD Process flow and defects', 'Data flow & Database', 'NCDD/EDI calculation']);
+  });
+
+  it('imports "Systems installation & overview" as a single module containing every system/tool mission', () => {
+    const systemNames = [
+      'ICE',
+      'EDI.com',
+      'KLARITY',
+      'DETS',
+      'DART',
+      '1-Click',
+      'JMP',
+      'YodaCreek',
+      'DAGRS',
+      'GAJT',
+      'Query',
+      'I MATCH',
+      'CLUI',
+      'Tracer report',
+      '1NOTE',
+      'TEAMs',
+      'Auto dispo',
+      'Pilot management',
+      'Lime Light',
+    ];
+    const rows: RawWorkbookRow[] = systemNames.map((title, i) =>
+      row({ rowNumber: 7 + i, category: 'Systems installation & overview', title }),
+    );
+    const tasks = normalizeRows(rows);
+    const modules = buildModules(tasks);
+    const systemsModules = modules.filter((m) => m.title === 'Systems installation & overview');
+    // Everything lands in exactly one module (no split into a second phase).
+    expect(systemsModules).toHaveLength(1);
+    expect(systemsModules[0].taskIds).toHaveLength(systemNames.length);
+    expect(systemsModules[0].phaseId).toBe('systems-installation');
+  });
+
+  it('imports "WG Overview & tool menagerie" as its own module', () => {
+    const rows: RawWorkbookRow[] = [
+      row({ rowNumber: 44, category: 'WG Overview & tool menagerie', title: '# of tools, Chambers' }),
+      row({ rowNumber: 45, category: 'WG Overview & tool menagerie', title: 'Wafer flow' }),
+      row({ rowNumber: 46, category: 'WG Overview & tool menagerie', title: 'Touch points' }),
+    ];
+    const tasks = normalizeRows(rows);
+    const modules = buildModules(tasks);
+    const wgModule = modules.find((m) => m.title === 'WG Overview & tool menagerie');
+    expect(wgModule).toBeDefined();
+    expect(wgModule!.taskIds).toHaveLength(3);
+    expect(wgModule!.phaseId).toBe('shift-readiness-wg-exposure');
+  });
+
+  it('imports "ENG- Inline layers Practice" as its own module', () => {
+    const rows: RawWorkbookRow[] = [
+      row({ rowNumber: 51, category: 'ENG- Inline layers Practice', title: 'Cassification/DOI' }),
+      row({ rowNumber: 52, category: 'ENG- Inline layers Practice', title: 'dispo/RFC/RT' }),
+      row({ rowNumber: 53, category: 'ENG- Inline layers Practice', title: 'IMT' }),
+    ];
+    const tasks = normalizeRows(rows);
+    const modules = buildModules(tasks);
+    const engModule = modules.find((m) => m.title === 'ENG- Inline layers Practice');
+    expect(engModule).toBeDefined();
+    expect(engModule!.taskIds).toHaveLength(3);
+    expect(engModule!.phaseId).toBe('eng-inline-final-readiness');
+  });
 });
