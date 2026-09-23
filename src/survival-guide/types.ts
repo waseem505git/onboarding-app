@@ -28,7 +28,11 @@ export type GlossaryCategory =
  * Strict validation statuses per the Stage A specification. Note this is a
  * superset of the Stage A source-material's original list — it adds
  * `rejected-insufficient-evidence` for terms that must be dropped from the
- * candidate inventory rather than merely marked needs-review.
+ * candidate inventory rather than merely marked needs-review, and
+ * `SME-curated` (Stage B) for entries sourced from an explicitly-provided,
+ * human-curated local document that is NOT SharePoint-verified. An
+ * `SME-curated` entry must never be silently upgraded to `verified` — that
+ * still requires the full evidentiary trail in `docs/survival-guide-sme-review.md`.
  */
 export type VerificationStatus =
   | 'verified'
@@ -36,7 +40,8 @@ export type VerificationStatus =
   | 'historical'
   | 'conflicting'
   | 'needs-review'
-  | 'rejected-insufficient-evidence';
+  | 'rejected-insufficient-evidence'
+  | 'SME-curated';
 
 /** FE = Front End, BE = Back End, SSAFI = Sort/Substrate/Assembly/Final Inspection track. */
 export type RoleScope = 'FE' | 'BE' | 'SSAFI' | 'general';
@@ -50,7 +55,9 @@ export type GlossarySourceType =
   | 'knowledge-base'
   | 'wafer-pattern-intelligence'
   | 'group-instruction'
-  | 'external';
+  | 'external'
+  /** A manually-provided, human-curated local document — see docs/survival-guide-stage-b-validation-report.md. Distinct from `external`/`sharepoint`: never implies SharePoint verification. */
+  | 'sme-curated';
 
 /** Whether a requested source was actually opened/read, per the Stage A access rules. */
 export type SourceAccessOutcome =
