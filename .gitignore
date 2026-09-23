@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Stage B local source intake staging area (see local-source-materials/README.md
+# and docs/survival-guide-source-access-report.md). Manually exported approved
+# internal source files must never be committed — only the README describing
+# the process is tracked.
+local-source-materials/*
+!local-source-materials/README.md

@@ -11,7 +11,8 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "source:intake-check": "node scripts/source-intake-check.mjs"
   },
   "dependencies": {
     "exceljs": "^4.4.0",

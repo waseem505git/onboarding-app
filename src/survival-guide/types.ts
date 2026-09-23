@@ -1,0 +1,161 @@
+/**
+ * STAGE A — NON-PRODUCTION REVIEW TYPES ONLY.
+ *
+ * This module exists solely to give the Stage A evidence-review process
+ * (see docs/survival-guide-core-term-review.md,
+ * docs/survival-guide-source-register.md) a typed shape to record findings
+ * in. It is intentionally NOT imported by:
+ *   - src/App.tsx or any navigation/tab
+ *   - src/components/Dashboard.tsx, ChecklistView.tsx, or any other UI
+ *   - src/domain/**, src/persistence/**, src/achievements/**
+ *   - the existing src/glossary/glossary.ts tooltip glossary
+ *
+ * Do not import this file into application code until a later stage
+ * explicitly authorizes UI integration. See
+ * docs/survival-guide-requirements-matrix.md for the staged plan.
+ */
+
+export type GlossaryCategory =
+  | 'yield-defect'
+  | 'tracer-investigation'
+  | 'recovery-tool-actions'
+  | 'pd-daily-work'
+  | 'process-manufacturing'
+  | 'measurement-analysis'
+  | 'systems';
+
+/**
+ * Strict validation statuses per the Stage A specification. Note this is a
+ * superset of the Stage A source-material's original list — it adds
+ * `rejected-insufficient-evidence` for terms that must be dropped from the
+ * candidate inventory rather than merely marked needs-review.
+ */
+export type VerificationStatus =
+  | 'verified'
+  | 'context-dependent'
+  | 'historical'
+  | 'conflicting'
+  | 'needs-review'
+  | 'rejected-insufficient-evidence';
+
+/** FE = Front End, BE = Back End, SSAFI = Sort/Substrate/Assembly/Final Inspection track. */
+export type RoleScope = 'FE' | 'BE' | 'SSAFI' | 'general';
+
+export type ProcessScope = 'layer' | 'segment' | 'process' | 'CEID' | 'module' | 'general';
+
+export type GlossarySourceType =
+  | 'sharepoint'
+  | 'signal-management'
+  | 'pilot-management'
+  | 'knowledge-base'
+  | 'wafer-pattern-intelligence'
+  | 'group-instruction'
+  | 'external';
+
+/** Whether a requested source was actually opened/read, per the Stage A access rules. */
+export type SourceAccessOutcome =
+  | 'accessible-fully-read'
+  | 'accessible-partially-read'
+  | 'access-denied'
+  | 'not-found'
+  | 'ambiguous-path'
+  | 'not-attempted';
+
+/**
+ * How much of a term's evidence trail is actually populated, independent of
+ * whether the source itself was reachable. A term can only ever have
+ * `evidenceStatus: 'full-evidence'` if `sourceStatus` is
+ * `'accessible-fully-read'` (or `'accessible-partially-read'` for
+ * `'partial-evidence'`) — this is a Stage A/B gate, not a UI concern.
+ */
+export type EvidenceStatus = 'no-evidence' | 'partial-evidence' | 'full-evidence';
+
+export interface GlossarySource {
+  sourceType: GlossarySourceType;
+  fileName?: string;
+  sourceSystem?: string;
+  /** The exact path or URL requested — must match what was actually attempted. */
+  sitePath: string;
+  section?: string;
+  lastVerified?: string;
+  /** Only present when explicitly available from the source itself. */
+  lastModified?: string;
+  accessOutcome: SourceAccessOutcome;
+}
+
+export interface GlossaryEntry {
+  id: string;
+  term: string;
+  abbreviation?: string;
+  aliases: string[];
+  /** Only set when an approved source explicitly documents the expansion. */
+  fullName?: string;
+  category: GlossaryCategory;
+  definition: string;
+  plainLanguage: string;
+  whyItMatters: string;
+  dailyWorkContext: string[];
+  whereYouWillSeeIt: string[];
+  relatedTerms: string[];
+  roleScope: RoleScope[];
+  processScope: ProcessScope[];
+  stableOrProcedural: 'stable' | 'procedural' | 'mixed';
+  verificationStatus: VerificationStatus;
+  sources: GlossarySource[];
+  reviewedBy?: string;
+  reviewedOn?: string;
+  needsReview: boolean;
+}
+
+/**
+ * A Stage A evidence record — richer than `GlossaryEntry`, since it must
+ * carry the audit trail (conflicts, limitations, SME questions, privacy
+ * risk, publication recommendation) that a published entry would not need
+ * to display in the UI but that a reviewer must see.
+ */
+export interface ReviewRecord {
+  term: string;
+  abbreviation?: string;
+  aliases: string[];
+  /** Only set when an approved source explicitly documents the expansion. */
+  verifiedFullName?: string;
+  category: GlossaryCategory;
+  proposedDefinition: string;
+  plainLanguageExplanation: string;
+  whyItMatters: string;
+  whereItAppearsInDailyWork: string[];
+  relatedTerms: string[];
+  roleScope: RoleScope[];
+  processScope: ProcessScope[];
+  stableOrProcedural: 'stable' | 'procedural' | 'mixed' | 'unclassified';
+  validationStatus: VerificationStatus;
+  /** Exact file/folder/system the definition would come from, once accessible. */
+  exactSourceFile?: string;
+  exactSharePointFolderOrSystem?: string;
+  exactSourceSectionOrPassage?: string;
+  sourceDate?: string;
+  /**
+   * Aggregate access outcome for this term's mandated source(s), per
+   * docs/survival-guide-source-access-report.md. This is a per-term summary
+   * of the same access-attempt evidence, not a separate access attempt.
+   */
+  sourceStatus: SourceAccessOutcome;
+  /** How much of the evidence trail is actually populated (see `EvidenceStatus`). */
+  evidenceStatus: EvidenceStatus;
+  /**
+   * Whether this term must pass the checklist in
+   * docs/survival-guide-sme-review.md before `validationStatus` can move away
+   * from `'needs-review'`. Always `true` while `evidenceStatus` is not
+   * `'full-evidence'`.
+   */
+  smeReviewRequired: boolean;
+  conflictingInterpretations: string[];
+  limitations: string;
+  smeQuestion: string;
+  privacyRisk: string;
+  publicationRecommendation: 'do-not-publish' | 'publish-with-sme-review' | 'not-applicable-yet';
+  /** Freeform Stage A reviewer notes — never a substitute for the structured fields above. */
+  notes?: string;
+}
+
+export const SCHEMA_VERSION = 1;
