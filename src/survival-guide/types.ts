@@ -1,18 +1,25 @@
 /**
- * STAGE A — NON-PRODUCTION REVIEW TYPES ONLY.
+ * Survival Guide data types.
  *
- * This module exists solely to give the Stage A evidence-review process
- * (see docs/survival-guide-core-term-review.md,
- * docs/survival-guide-source-register.md) a typed shape to record findings
- * in. It is intentionally NOT imported by:
- *   - src/App.tsx or any navigation/tab
- *   - src/components/Dashboard.tsx, ChecklistView.tsx, or any other UI
- *   - src/domain/**, src/persistence/**, src/achievements/**
- *   - the existing src/glossary/glossary.ts tooltip glossary
+ * `ReviewRecord` remains the Stage A evidence-review shape (see
+ * docs/survival-guide-core-term-review.md,
+ * docs/survival-guide-source-register.md) and is still not imported by any
+ * UI — it is a richer audit record, not a published shape.
  *
- * Do not import this file into application code until a later stage
- * explicitly authorizes UI integration. See
- * docs/survival-guide-requirements-matrix.md for the staged plan.
+ * `GlossaryEntry` (and its supporting types) is the published shape and,
+ * as of Stage B Step 4, IS imported by production UI:
+ *   - src/components/SurvivalGuideView.tsx (via
+ *     src/survival-guide/glossary-data.ts's `SME_CURATED_GLOSSARY_ENTRIES`)
+ *   - src/App.tsx (the "Survival Guide" tab)
+ *
+ * This UI integration is explicitly SME-curated-only: every rendered entry
+ * must carry `verificationStatus: 'SME-curated'` (never silently treated as
+ * `'verified'`), and the UI must display a persistent disclaimer per
+ * docs/survival-guide-content-governance.md and
+ * docs/survival-guide-safety-validation-report.md. It remains unrelated to
+ * src/domain/**, src/persistence/**, src/achievements/**, and the existing
+ * src/glossary/glossary.ts tooltip glossary, none of which are touched by
+ * this module.
  */
 
 export type GlossaryCategory =

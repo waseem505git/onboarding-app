@@ -24,13 +24,15 @@ import { TaskDetailDrawer } from './components/TaskDetailDrawer';
 import { DataManagementPanel } from './components/DataManagementPanel';
 import { ThemeToggle } from './components/ThemeToggle';
 import { OrientationModal, hasSeenOrientation, markOrientationSeen } from './components/OrientationModal';
-import { IconGrid, IconList, IconSettingsGear } from './components/icons';
+import { IconGrid, IconList, IconSettingsGear, IconBook } from './components/icons';
+import { SurvivalGuideView } from './components/SurvivalGuideView';
+import { SME_CURATED_GLOSSARY_ENTRIES } from './survival-guide/glossary-data';
 
 const curriculumRepo = new IndexedDbCurriculumRepository();
 const profileRepo = new IndexedDbProfileRepository();
 const progressRepo = new IndexedDbProgressRepository();
 
-type Tab = 'dashboard' | 'checklist' | 'settings';
+type Tab = 'dashboard' | 'checklist' | 'survivalGuide' | 'settings';
 
 function downloadFile(filename: string, content: string, mime: string) {
   const blob = new Blob([content], { type: mime });
@@ -389,6 +391,9 @@ export default function App() {
         <button className="tab" role="tab" aria-selected={tab === 'checklist'} onClick={() => setTab('checklist')}>
           <IconList size={16} /> Checklist
         </button>
+        <button className="tab" role="tab" aria-selected={tab === 'survivalGuide'} onClick={() => setTab('survivalGuide')}>
+          <IconBook size={16} /> Survival Guide
+        </button>
         <button className="tab" role="tab" aria-selected={tab === 'settings'} onClick={() => setTab('settings')}>
           <IconSettingsGear size={16} /> Settings
         </button>
@@ -411,6 +416,8 @@ export default function App() {
           openTaskId={openTaskId}
         />
       )}
+
+      {tab === 'survivalGuide' && <SurvivalGuideView entries={SME_CURATED_GLOSSARY_ENTRIES} />}
 
       {tab === 'settings' && (
         <DataManagementPanel

@@ -16,6 +16,12 @@
  * empty string/array rather than invented — see the validation report for
  * the full per-field gap list.
  *
+ * Stage B, Step 4: `SME_CURATED_GLOSSARY_ENTRIES` is now consumed directly
+ * by `src/components/SurvivalGuideView.tsx` (rendered from the "Survival
+ * Guide" tab in `src/App.tsx`). The UI renders only fields present here —
+ * it does not fabricate or infer missing content — and always shows the
+ * `SME-curated` label plus a `needsReview` flag per entry.
+ *
  * `needsReview: true` is set only for the terms the source document's own
  * Governance section (section 9) flags as having acronym expansions "not
  * from a formal source" and recommends re-checking against an SME or

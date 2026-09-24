@@ -96,3 +96,27 @@ begin as soon as real files arrive.
 section.** Stage A.1 only prepares the intake location and tooling; no
 source file has been placed, reviewed, or approved, and no
 `ReviewRecord` has moved off `needs-review`.
+
+## Stage B: Terminology Ingestion & UI Integration
+
+**Status:** Complete through Step 6 below. Per explicit user instruction,
+Stage B proceeds on the SME-curated local source
+(`local-source-materials/terminology/defmet-survival-guide-v1.md`) and,
+having produced verified content, continues straight into UI
+integration and validation rather than waiting on the still-blocked
+SharePoint sources (see "Relationship to Stage A" in
+`docs/survival-guide-stage-b-validation-report.md`).
+
+| Step | Scope | Deliverable | Status |
+|---|---|---|---|
+| 1–3 | Terminology ingestion: parse the SME-curated source, populate `src/survival-guide/glossary-data.ts` (74 `GlossaryEntry` records), record gaps/parsing issues/cross-checks | `src/survival-guide/glossary-data.ts`, `docs/survival-guide-stage-b-validation-report.md` | Done |
+| 4 | Survival Guide UI: read-only term browser (search, category filter, needs-review filter, detail dialog with related-term navigation), wired into a new "Survival Guide" tab | `src/components/SurvivalGuideView.tsx`, `src/survival-guide/categoryLabels.ts`, `src/App.tsx` (new tab), CSS in `src/index.css` | Done |
+| 5 | Safety validation: confirm the UI upholds every rule in `docs/survival-guide-content-governance.md` (labeling, needsReview visibility, non-authorization disclaimer, no fabrication, no confidential data, unaffected existing systems, accessibility) | `docs/survival-guide-safety-validation-report.md` | Done |
+| 6 | Tests and build: component tests for the new UI plus full regression | `src/components/SurvivalGuideView.test.tsx` (10 tests); `npm run test` 107/107 passing; `npm run build` succeeds; `npm run lint` no new errors | Done |
+
+**Explicit non-goals carried forward:** no entry was upgraded to
+`verified`; `NCDD`, `Station Monitor`, and `PD` remain unadded; the 9
+`needsReview` acronym-expansion terms (`MGPC, RFC, xRFC, MSS, SM, SS,
+DFX, DCL, SQC`) still require SME sign-off before their flag can be
+cleared; `src/glossary/glossary.ts` (the separate tooltip glossary) was
+not touched.
