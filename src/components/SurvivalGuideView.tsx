@@ -1,5 +1,8 @@
 /**
  * Stage B, Step 4 — Survival Guide UI.
+ * Stage B.2 — every card/detail view now always shows the full English
+ * expansion (or an explicit "pending SME verification" placeholder) plus
+ * plain-language text, per docs/survival-guide-content-audit.md.
  *
  * Read-only reference view over `SME_CURATED_GLOSSARY_ENTRIES`
  * (src/survival-guide/glossary-data.ts). This is the first production
@@ -13,16 +16,22 @@
  * docs/survival-guide-safety-validation-report.md):
  *   - Every entry is labeled with its `verificationStatus` — never
  *     presented as if it were SharePoint-verified.
- *   - `needsReview: true` entries carry a visible "Needs SME review" flag.
+ *   - `needsReview: true` entries carry a visible "⚠ SME Review Required"
+ *     flag.
  *   - A persistent disclaimer states this guide does not authorize any
  *     GO/NO-GO, scrap, threshold, or RFC/xRFC decision.
  *   - This component only renders `GlossaryEntry` fields already present in
- *     the data; it never fabricates, infers, or fills in missing text.
+ *     the data; it never fabricates, infers, or fills in missing text. A
+ *     missing `fullName` is shown as an explicit "Full Name Pending SME
+ *     Verification" placeholder, never a guessed expansion.
  */
 import { useMemo, useState } from 'react';
 import type { GlossaryCategory, GlossaryEntry } from '../survival-guide/types';
 import { CATEGORY_LABELS, CATEGORY_ORDER } from '../survival-guide/categoryLabels';
 import { IconAlertTriangle, IconBook } from './icons';
+
+const SME_REVIEW_BADGE_TEXT = '⚠ SME Review Required';
+const FULL_NAME_PENDING_TEXT = 'Full Name Pending SME Verification';
 
 interface SurvivalGuideViewProps {
   entries: GlossaryEntry[];
@@ -78,7 +87,7 @@ export function SurvivalGuideView({ entries }: SurvivalGuideViewProps) {
           procedure, QEF, module decisions, safety instructions, or Tool Owner
           guidance, and must never be used to authorize a GO/NO-GO, Scrap,
           Threshold, or RFC/xRFC decision. Terms flagged{' '}
-          <span className="badge-needs-review">Needs SME review</span> have an
+          <span className="badge-needs-review">{SME_REVIEW_BADGE_TEXT}</span> have an
           acronym expansion the source itself could not confirm from a formal
           document.
         </div>
@@ -144,10 +153,14 @@ export function SurvivalGuideView({ entries }: SurvivalGuideViewProps) {
                   {entry.term}
                   {entry.abbreviation && entry.abbreviation !== entry.term ? ` (${entry.abbreviation})` : ''}
                 </span>
-                {entry.needsReview && <span className="badge-needs-review">Needs SME review</span>}
+                {entry.needsReview && <span className="badge-needs-review">{SME_REVIEW_BADGE_TEXT}</span>}
+              </div>
+              <div className="glossary-term-fullname">
+                {entry.fullName ? entry.fullName : <em className="glossary-fullname-pending">{FULL_NAME_PENDING_TEXT}</em>}
               </div>
               <div className="glossary-term-category">{CATEGORY_LABELS[entry.category]}</div>
-              <div className="glossary-term-snippet">{entry.definition}</div>
+              <div className="glossary-term-definition">{entry.definition}</div>
+              {entry.plainLanguage && <div className="glossary-term-plain">{entry.plainLanguage}</div>}
               <div className="glossary-term-status">
                 <span className="badge-sme-curated">SME-curated</span>
               </div>
@@ -171,7 +184,13 @@ export function SurvivalGuideView({ entries }: SurvivalGuideViewProps) {
                   <IconBook size={18} /> {selected.term}
                   {selected.abbreviation && selected.abbreviation !== selected.term ? ` (${selected.abbreviation})` : ''}
                 </h2>
-                {selected.fullName && <div className="glossary-term-fullname">{selected.fullName}</div>}
+                {selected.fullName ? (
+                  <div className="glossary-term-fullname">{selected.fullName}</div>
+                ) : (
+                  <div className="glossary-term-fullname">
+                    <em className="glossary-fullname-pending">{FULL_NAME_PENDING_TEXT}</em>
+                  </div>
+                )}
               </div>
               <button type="button" className="btn" onClick={() => setSelectedId(null)}>
                 Close
@@ -180,7 +199,7 @@ export function SurvivalGuideView({ entries }: SurvivalGuideViewProps) {
 
             <div className="glossary-term-badges">
               <span className="badge-sme-curated">SME-curated</span>
-              {selected.needsReview && <span className="badge-needs-review">Needs SME review</span>}
+              {selected.needsReview && <span className="badge-needs-review">{SME_REVIEW_BADGE_TEXT}</span>}
               <span className="glossary-term-category">{CATEGORY_LABELS[selected.category]}</span>
             </div>
 

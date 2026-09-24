@@ -48,13 +48,25 @@ describe('SurvivalGuideView', () => {
 
   it('flags needsReview entries with a visible badge', () => {
     render(<SurvivalGuideView entries={[makeEntry({ needsReview: true })]} />);
-    expect(screen.getAllByText('Needs SME review').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('⚠ SME Review Required').length).toBeGreaterThan(0);
   });
 
   it('does not show the needs-review badge for entries that do not need it', () => {
     render(<SurvivalGuideView entries={[makeEntry({ needsReview: false })]} />);
     const card = screen.getByRole('button', { name: /Test Term/i });
-    expect(within(card).queryByText('Needs SME review')).not.toBeInTheDocument();
+    expect(within(card).queryByText('⚠ SME Review Required')).not.toBeInTheDocument();
+  });
+
+  it('always displays the full English expansion directly on the card when fullName is set', () => {
+    render(<SurvivalGuideView entries={[makeEntry({ term: 'SS', fullName: 'Surface Scan' })]} />);
+    const card = screen.getByRole('button', { name: /^SS/i });
+    expect(within(card).getByText('Surface Scan')).toBeInTheDocument();
+  });
+
+  it('shows the "Full Name Pending SME Verification" placeholder when fullName is empty', () => {
+    render(<SurvivalGuideView entries={[makeEntry({ term: 'MGPC', fullName: undefined })]} />);
+    const card = screen.getByRole('button', { name: /^MGPC/i });
+    expect(within(card).getByText('Full Name Pending SME Verification')).toBeInTheDocument();
   });
 
   it('filters by search query', () => {
