@@ -22,26 +22,58 @@
  * it does not fabricate or infer missing content — and always shows the
  * `SME-curated` label plus a `needsReview` flag per entry.
  *
- * `needsReview: true` is set only for the terms the source document's own
- * Governance section (section 9) flags as having acronym expansions "not
- * from a formal source" and recommends re-checking against an SME or
+ * `needsReview: true` was originally set for the terms the source document's
+ * own Governance section (section 9) flagged as having acronym expansions
+ * "not from a formal source" and recommended re-checking against an SME or
  * approved document before wide distribution: MGPC, RFC, xRFC, MSS, SM, SS,
- * DFX, DCL, SQC.
+ * DFX, DCL, SQC. Stage B.1 (below) resolved SS to `needsReview: false`
+ * after direct SME confirmation; the other 8 remain `needsReview: true`.
+ *
+ * STAGE B.1 — GLOSSARY NORMALIZATION (see
+ * docs/survival-guide-content-audit.md). A later pass added/enriched a
+ * second set of terms (GL, NGL, SS, EDI, NCDD, CDD, ADC, ARS, YMC, DOR, EDX,
+ * MGPC, DFX, GFA) from an SME's direct terminology confirmation given as
+ * task instruction, not from the original source document. That
+ * confirmation is recorded as its own `GlossarySource`
+ * (`STAGE_B1_SME_SOURCE`, `sitePath: 'stage-b1-sme-instruction'`) so it is
+ * never conflated with the original file's provenance. Where the Stage B.1
+ * instruction agreed with or added to the original file content, both
+ * sources are kept on the entry. Where it conflicted with previously
+ * source-confirmed content (EDI's `fullName`, GFA's already-sourced
+ * `fullName`), the conflict is recorded — not silently resolved — per
+ * `docs/survival-guide-content-governance.md` rule 4, and the entry is kept
+ * at `needsReview: true` pending human SME reconciliation. Every entry
+ * remains `verificationStatus: 'SME-curated'`; none is upgraded to
+ * `'verified'` by this pass.
  */
-import type { GlossaryEntry } from './types';
+import type { GlossaryEntry, GlossarySource } from './types';
 
 export const GLOSSARY_SOURCE_FILE = 'defmet-survival-guide-v1.md';
+
+/**
+ * Provenance marker for Stage B.1 content: terms/fields confirmed directly
+ * by an SME as task instruction during the 2026-09-24 glossary
+ * normalization pass, distinct from `GLOSSARY_SOURCE_FILE` (the original
+ * ingested document). See docs/survival-guide-content-audit.md.
+ */
+const STAGE_B1_SME_SOURCE: GlossarySource = {
+  sourceType: 'sme-curated',
+  sitePath: 'stage-b1-sme-instruction',
+  section: 'Stage B.1 glossary normalization — direct SME confirmation via task instruction (not a source document)',
+  lastVerified: '2026-09-24',
+  accessOutcome: 'accessible-fully-read',
+};
 
 export const SME_CURATED_GLOSSARY_ENTRIES: GlossaryEntry[] = [
   {
     id: "edi",
     term: "EDI",
     abbreviation: "EDI",
-    aliases: ["Equivalent Defect Impact"],
+    aliases: ["Equivalent Defect Impact", "Estimated Die Impact"],
     fullName: "Equivalent Defect Impact",
     category: "yield-defect",
-    definition: "מדד שמתרגם דפקטים להשפעה על Yield. לא כל דפקט משפיע באופן זהה, ולכן מסתכלים על EDI ולא רק על מספר הדפקטים. Illustrative example (from source): דפקט אחד עשוי לתרום 0.01 EDI, בעוד דפקט אחר עשוי לתרום 3 EDI.",
-    plainLanguage: "",
+    definition: "מדד שמתרגם דפקטים להשפעה על Yield. לא כל דפקט משפיע באופן זהה, ולכן מסתכלים על EDI ולא רק על מספר הדפקטים. Illustrative example (from source): דפקט אחד עשוי לתרום 0.01 EDI, בעוד דפקט אחר עשוי לתרום 3 EDI. Conflict (Stage B.1, not silently resolved — see docs/survival-guide-content-audit.md): the original source document explicitly names this 'Equivalent Defect Impact'; a later Stage B.1 SME instruction named it 'Estimated Die Impact' instead. Both are kept — as `fullName` and as an alias — pending human SME reconciliation of which is correct.",
+    plainLanguage: "Estimate of how much the detected defects may hurt yield.",
     whyItMatters: "מאפשר לתעדף בעיות לפי השפעתן הצפויה על ה-Yield.",
     dailyWorkContext: [],
     whereYouWillSeeIt: ["דוחות PD", "סקירות Yield", "בדיקת Gaps", "Tracers ו-Disposition"],
@@ -57,8 +89,9 @@ export const SME_CURATED_GLOSSARY_ENTRIES: GlossaryEntry[] = [
         sitePath: 'local-source-materials/terminology/' + GLOSSARY_SOURCE_FILE,
         accessOutcome: 'accessible-fully-read',
       },
+      STAGE_B1_SME_SOURCE,
     ],
-    needsReview: false,
+    needsReview: true,
   },
   {
     id: "defect-count",
@@ -93,8 +126,8 @@ export const SME_CURATED_GLOSSARY_ENTRIES: GlossaryEntry[] = [
     aliases: ["Geometric Failure Area"],
     fullName: "Geometric Failure Area",
     category: "yield-defect",
-    definition: "אזור גאומטרי מסוים במפת ה-Wafer שבו קיימת הצטברות או תבנית של דפקטים. Examples (from source): 6 O'clock GFA; Center GFA; Edge GFA; Ring GFA",
-    plainLanguage: "",
+    definition: "אזור גאומטרי מסוים במפת ה-Wafer שבו קיימת הצטברות או תבנית של דפקטים. Examples (from source): 6 O'clock GFA; Center GFA; Edge GFA; Ring GFA. Conflict (Stage B.1, not silently resolved — see docs/survival-guide-content-audit.md): this fullName was stated directly by the original source document (not derived/inferred, and not among the 9 terms the source's own Governance section flagged as needing confirmation). A later Stage B.1 instruction nonetheless described GFA as \"pending SME verification\" with no fullName confirmed. The original source-confirmed fullName is kept rather than deleted; the entry is flagged for human SME reconciliation instead.",
+    plainLanguage: "Spatial defect pattern/signature concept used by SSA.",
     whyItMatters: "צורת הפיזור עשויה לסייע בזיהוי קשר לתהליך, Tool, Chamber או נקודת מגע.",
     dailyWorkContext: [],
     whereYouWillSeeIt: [],
@@ -110,8 +143,9 @@ export const SME_CURATED_GLOSSARY_ENTRIES: GlossaryEntry[] = [
         sitePath: 'local-source-materials/terminology/' + GLOSSARY_SOURCE_FILE,
         accessOutcome: 'accessible-fully-read',
       },
+      STAGE_B1_SME_SOURCE,
     ],
-    needsReview: false,
+    needsReview: true,
   },
   {
     id: "cfa",
@@ -348,7 +382,7 @@ export const SME_CURATED_GLOSSARY_ENTRIES: GlossaryEntry[] = [
     term: "MGPC",
     aliases: [],
     category: "tracer-investigation",
-    definition: "מודל או Signal סטטיסטי שמזהה תבנית משותפת במספר Wafers.",
+    definition: "מודל או Signal סטטיסטי שמזהה תבנית משותפת במספר Wafers. Confirmed description (Stage B.1, no fullName invented): tracer type used to identify sustained separation from baseline and initiate defect response.",
     plainLanguage: "במקום להתמקד ב-Wafer חריג יחיד, מחפשים מספר נקודות או Wafers עם Pattern משותף ביחס ל-Baseline.",
     whyItMatters: "",
     dailyWorkContext: [],
@@ -365,6 +399,7 @@ export const SME_CURATED_GLOSSARY_ENTRIES: GlossaryEntry[] = [
         sitePath: 'local-source-materials/terminology/' + GLOSSARY_SOURCE_FILE,
         accessOutcome: 'accessible-fully-read',
       },
+      STAGE_B1_SME_SOURCE,
     ],
     needsReview: true,
   },
@@ -681,12 +716,12 @@ export const SME_CURATED_GLOSSARY_ENTRIES: GlossaryEntry[] = [
     aliases: ["Gating Lot"],
     fullName: "Gating Lot",
     category: "recovery-tool-actions",
-    definition: "Lot המשמש לקבלת החלטה האם ה-Tool יכול לחזור לייצור.",
-    plainLanguage: "",
+    definition: "Lot המשמש לקבלת החלטה האם ה-Tool יכול לחזור לייצור. Confirmed (Stage B.1): lot used to determine whether a tool or process can return to production after recovery activity, RFC or tracer response.",
+    plainLanguage: "The decision lot. Its results are used for GO / NO-GO decisions.",
     whyItMatters: "",
     dailyWorkContext: [],
     whereYouWillSeeIt: [],
-    relatedTerms: ["GO", "NO GO", "NGL", "Disposition"],
+    relatedTerms: ["GO", "NO GO", "NGL", "Disposition", "RFC"],
     roleScope: [],
     processScope: [],
     stableOrProcedural: 'mixed',
@@ -698,6 +733,7 @@ export const SME_CURATED_GLOSSARY_ENTRIES: GlossaryEntry[] = [
         sitePath: 'local-source-materials/terminology/' + GLOSSARY_SOURCE_FILE,
         accessOutcome: 'accessible-fully-read',
       },
+      STAGE_B1_SME_SOURCE,
     ],
     needsReview: false,
   },
@@ -705,11 +741,11 @@ export const SME_CURATED_GLOSSARY_ENTRIES: GlossaryEntry[] = [
     id: "ngl",
     term: "NGL",
     abbreviation: "NGL",
-    aliases: ["Non-Gating Lot"],
+    aliases: ["Non-Gating Lot", "Non Gating Lot"],
     fullName: "Non-Gating Lot",
     category: "recovery-tool-actions",
-    definition: "Lot המשמש למעקב או מידע, אך אינו קובע לבדו את החלטת השחרור.",
-    plainLanguage: "",
+    definition: "Lot המשמש למעקב או מידע, אך אינו קובע לבדו את החלטת השחרור. Confirmed (Stage B.1): lot used for follow-up monitoring after recovery or tracer activity but does not block tool release.",
+    plainLanguage: "A monitoring lot that provides extra confidence but is not the lot that decides tool release.",
     whyItMatters: "",
     dailyWorkContext: [],
     whereYouWillSeeIt: [],
@@ -725,6 +761,7 @@ export const SME_CURATED_GLOSSARY_ENTRIES: GlossaryEntry[] = [
         sitePath: 'local-source-materials/terminology/' + GLOSSARY_SOURCE_FILE,
         accessOutcome: 'accessible-fully-read',
       },
+      STAGE_B1_SME_SOURCE,
     ],
     needsReview: false,
   },
@@ -812,7 +849,7 @@ export const SME_CURATED_GLOSSARY_ENTRIES: GlossaryEntry[] = [
     term: "DFX",
     aliases: [],
     category: "recovery-tool-actions",
-    definition: "Defectivity check או scan שמבוצע לאחר פעילות Tool לצורך Validation.",
+    definition: "Defectivity check או scan שמבוצע לאחר פעילות Tool לצורך Validation. Confirmed description (Stage B.1, no fullName invented): surface-defect related monitor/check used in recovery and response flows.",
     plainLanguage: "",
     whyItMatters: "",
     dailyWorkContext: [],
@@ -829,6 +866,7 @@ export const SME_CURATED_GLOSSARY_ENTRIES: GlossaryEntry[] = [
         sitePath: 'local-source-materials/terminology/' + GLOSSARY_SOURCE_FILE,
         accessOutcome: 'accessible-fully-read',
       },
+      STAGE_B1_SME_SOURCE,
     ],
     needsReview: true,
   },
@@ -1532,7 +1570,7 @@ export const SME_CURATED_GLOSSARY_ENTRIES: GlossaryEntry[] = [
     aliases: ["Automatic Defect Classification"],
     fullName: "Automatic Defect Classification",
     category: "measurement-analysis",
-    definition: "סיווג אוטומטי של דפקטים באמצעות מערכת או מודל Classification.",
+    definition: "סיווג אוטומטי של דפקטים באמצעות מערכת או מודל Classification. Confirmed (Stage B.1): system that automatically classifies defect images and assigns confidence scores.",
     plainLanguage: "",
     whyItMatters: "",
     dailyWorkContext: [],
@@ -1549,6 +1587,7 @@ export const SME_CURATED_GLOSSARY_ENTRIES: GlossaryEntry[] = [
         sitePath: 'local-source-materials/terminology/' + GLOSSARY_SOURCE_FILE,
         accessOutcome: 'accessible-fully-read',
       },
+      STAGE_B1_SME_SOURCE,
     ],
     needsReview: false,
   },
@@ -1605,9 +1644,11 @@ export const SME_CURATED_GLOSSARY_ENTRIES: GlossaryEntry[] = [
   {
     id: "edx",
     term: "EDX",
-    aliases: [],
+    abbreviation: "EDX",
+    aliases: ["Energy Dispersive X-ray"],
+    fullName: "Energy Dispersive X-ray",
     category: "measurement-analysis",
-    definition: "בדיקה המסייעת בזיהוי החומר או ההרכב שממנו עשוי הדפקט.",
+    definition: "בדיקה המסייעת בזיהוי החומר או ההרכב שממנו עשוי הדפקט. Confirmed (Stage B.1): analysis method used to determine elemental composition.",
     plainLanguage: "",
     whyItMatters: "",
     dailyWorkContext: [],
@@ -1624,6 +1665,7 @@ export const SME_CURATED_GLOSSARY_ENTRIES: GlossaryEntry[] = [
         sitePath: 'local-source-materials/terminology/' + GLOSSARY_SOURCE_FILE,
         accessOutcome: 'accessible-fully-read',
       },
+      STAGE_B1_SME_SOURCE,
     ],
     needsReview: false,
   },
@@ -1900,8 +1942,8 @@ export const SME_CURATED_GLOSSARY_ENTRIES: GlossaryEntry[] = [
     aliases: ["Surf Scan", "Surface Scan"],
     fullName: "Surface Scan",
     category: "systems",
-    definition: "סריקה של פני השטח של Wafer לצורך איתור Defects.",
-    plainLanguage: "",
+    definition: "סריקה של פני השטח של Wafer לצורך איתור Defects. Confirmed (Stage B.1): inspection scan of the wafer surface used to search for defect candidates.",
+    plainLanguage: "The inspection step where the tool looks for defects on the wafer.",
     whyItMatters: "",
     dailyWorkContext: [],
     whereYouWillSeeIt: [],
@@ -1917,8 +1959,9 @@ export const SME_CURATED_GLOSSARY_ENTRIES: GlossaryEntry[] = [
         sitePath: 'local-source-materials/terminology/' + GLOSSARY_SOURCE_FILE,
         accessOutcome: 'accessible-fully-read',
       },
+      STAGE_B1_SME_SOURCE,
     ],
-    needsReview: true,
+    needsReview: false,
   },
   {
     id: "sqc",
@@ -1946,6 +1989,106 @@ export const SME_CURATED_GLOSSARY_ENTRIES: GlossaryEntry[] = [
       },
     ],
     needsReview: true,
+  },
+  {
+    id: "ncdd",
+    term: "NCDD",
+    abbreviation: "NCDD",
+    aliases: ["Normalized Cluster Defect Density"],
+    fullName: "Normalized Cluster Defect Density",
+    category: "yield-defect",
+    definition: "Confirmed (Stage B.1): normalized density metric based on clustered defects.",
+    plainLanguage: "",
+    whyItMatters: "",
+    dailyWorkContext: [],
+    whereYouWillSeeIt: [],
+    relatedTerms: ["CDD", "EDI", "Defect Count"],
+    roleScope: [],
+    processScope: [],
+    stableOrProcedural: 'mixed',
+    verificationStatus: 'SME-curated',
+    sources: [STAGE_B1_SME_SOURCE],
+    needsReview: false,
+  },
+  {
+    id: "cdd",
+    term: "CDD",
+    abbreviation: "CDD",
+    aliases: ["Cluster Defect Density"],
+    fullName: "Cluster Defect Density",
+    category: "yield-defect",
+    definition: "Confirmed (Stage B.1): density metric based on spatially clustered defects.",
+    plainLanguage: "",
+    whyItMatters: "",
+    dailyWorkContext: [],
+    whereYouWillSeeIt: [],
+    relatedTerms: ["NCDD", "EDI", "Defect Count"],
+    roleScope: [],
+    processScope: [],
+    stableOrProcedural: 'mixed',
+    verificationStatus: 'SME-curated',
+    sources: [STAGE_B1_SME_SOURCE],
+    needsReview: false,
+  },
+  {
+    id: "ars",
+    term: "ARS",
+    abbreviation: "ARS",
+    aliases: ["Advanced Review Sampling"],
+    fullName: "Advanced Review Sampling",
+    category: "measurement-analysis",
+    definition: "Confirmed (Stage B.1): system that assigns review samples and sample bins.",
+    plainLanguage: "",
+    whyItMatters: "",
+    dailyWorkContext: [],
+    whereYouWillSeeIt: [],
+    relatedTerms: ["ADC", "DOR", "Classification"],
+    roleScope: [],
+    processScope: [],
+    stableOrProcedural: 'mixed',
+    verificationStatus: 'SME-curated',
+    sources: [STAGE_B1_SME_SOURCE],
+    needsReview: false,
+  },
+  {
+    id: "ymc",
+    term: "YMC",
+    abbreviation: "YMC",
+    aliases: ["Yield Model Calculator"],
+    fullName: "Yield Model Calculator",
+    category: "yield-defect",
+    definition: "Confirmed (Stage B.1): engine that assigns kill probabilities and contributes to EDI calculation.",
+    plainLanguage: "",
+    whyItMatters: "",
+    dailyWorkContext: [],
+    whereYouWillSeeIt: [],
+    relatedTerms: ["EDI"],
+    roleScope: [],
+    processScope: [],
+    stableOrProcedural: 'mixed',
+    verificationStatus: 'SME-curated',
+    sources: [STAGE_B1_SME_SOURCE],
+    needsReview: false,
+  },
+  {
+    id: "dor",
+    term: "DOR",
+    abbreviation: "DOR",
+    aliases: ["Defect Offline Review Station"],
+    fullName: "Defect Offline Review Station",
+    category: "measurement-analysis",
+    definition: "Confirmed (Stage B.1): defect review classification station.",
+    plainLanguage: "",
+    whyItMatters: "",
+    dailyWorkContext: [],
+    whereYouWillSeeIt: [],
+    relatedTerms: ["ADC", "ARS", "Classification"],
+    roleScope: [],
+    processScope: [],
+    stableOrProcedural: 'mixed',
+    verificationStatus: 'SME-curated',
+    sources: [STAGE_B1_SME_SOURCE],
+    needsReview: false,
   },
 ];
 
